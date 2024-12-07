@@ -71,3 +71,53 @@ def pregunta_01():
 
 
     """
+    import os
+    import pandas as pd
+
+    # Descomprima el archivo
+    os.system("unzip files/input.zip -d files")
+
+    # Leer los archivos
+    train_files = []
+    test_files = []
+
+    for root, _, files in os.walk("files"):
+
+        for file in files:
+            if file.endswith(".txt"):
+                if "train" in root:
+                    train_files.append(os.path.join(root, file))
+                elif "test" in root:
+                    test_files.append(os.path.join(root, file))
+
+    # Ordenar train_files y test_files
+    train_files.sort()
+    test_files.sort()
+
+    # Función para extraer el sentimiento desde la ruta del archivo
+    def extract_sentiment(file_path):
+        return file_path.split(os.sep)[-2]
+
+    # Crear los dataframes (solo la primera fila de cada archivo)
+    train_data = []
+    for file in train_files:
+        with open(file, "r", encoding="utf-8") as f:
+            phrase = f.read().strip()
+            sentiment = extract_sentiment(file)
+            train_data.append({"phrase": phrase, "target": sentiment})
+
+    train_df = pd.DataFrame(train_data)
+
+    test_data = []
+    for file in test_files:
+        with open(file, "r", encoding="utf-8") as f:
+            phrase = f.read().strip()
+            sentiment = extract_sentiment(file)
+            test_data.append({"phrase": phrase, "target": sentiment})
+
+    test_df = pd.DataFrame(test_data)
+
+    # Guardar los dataframes
+    os.makedirs("files/output", exist_ok=True)
+    train_df.to_csv("files/output/train_dataset.csv", index=False)
+    test_df.to_csv("files/output/test_dataset.csv", index=False)
